@@ -1,0 +1,22 @@
+{
+    "usuarios": [
+        { "id": 4, "nombre": "Lucia Torres", "email": "lucia@mail.com" },
+        { "id": 5, "nombre": "Mario Cuentas", "email": "mario@mail.com" },
+        { "id": 6, "nombre": "Samir Ortiz", "email": "samir@mail.com" },
+        { "id": 7, "nombre": "Valeria Ríos", "email": "valeria@mail.com" }
+    ],
+
+    "amistades": [
+        { "id1": 4, "id2": 5 },
+        { "id1": 5, "id2": 6 },
+        { "id1": 6, "id2": 7 },
+        { "id1": 7, "id2": 4 }
+    ],
+
+    "publicaciones": [
+        { "id": 4, "texto": "Mi primer día aprendiendo Neo4j", "autor": 4 },
+        { "id": 5, "texto": "Hoy cociné pasta increíble", "autor": 5 },
+        { "id": 6, "texto": "Amo viajar por Latinoamérica", "autor": 6 },
+        { "id": 7, "texto": "¿Quién recomienda un anime?", "autor": 7 }
+    ]
+}
