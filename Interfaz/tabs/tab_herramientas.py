@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QFileDialog, QMessageBox, QFrame
 )
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 
 from database.neo4j_conn import (
@@ -22,48 +23,68 @@ class TabHerramientas(QWidget):
         layout.setSpacing(20)
         self.setLayout(layout)
         
-        title = QLabel("Herramientas Globales")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(title)
+        # Titulo
+        titulo = QLabel("Herramientas de Migración")
+        titulo.setProperty("class", "title")
+        layout.addWidget(titulo)
 
-        # PostgreSQL a Neo4j
+        descripcion = QLabel("Gestiona la sincronización de datos entre PostgreSQL, Neo4j y archivos JSON")
+        descripcion.setProperty("class", "description")
+        layout.addWidget(descripcion)
+
+        layout.addSpacing(15)
+
+        # Postgresql a neo4j
+        seccion1 = QLabel("🔄 Sincronización PostgreSQL → Neo4j")
+        seccion1.setProperty("class", "section-title")
+        layout.addWidget(seccion1)
+
         box_pg = QHBoxLayout()
         lbl_pg = QLabel("Migrar datos desde PostgreSQL:")
-        btn_pg = QPushButton("PostgreSQL  a  Neo4j")
+        btn_pg = QPushButton("➡️ PostgreSQL a Neo4j")
         btn_pg.clicked.connect(self.migrar_pg)
         box_pg.addWidget(lbl_pg)
+        box_pg.addStretch()
         box_pg.addWidget(btn_pg)
         layout.addLayout(box_pg)
 
         self.btn_pg = btn_pg
         self.add_separator(layout)
 
-        # JSON a Neo4j
+        # Json a neo4j
+        seccion2 = QLabel("📄 Importar desde JSON")
+        seccion2.setProperty("class", "section-title")
+        layout.addWidget(seccion2)
+
         box_json1 = QHBoxLayout()
         self.lbl_json = QLabel("Archivo JSON: Ninguno")
-        btn_sel_json = QPushButton("Seleccionar JSON")
+        btn_sel_json = QPushButton("📂 Seleccionar JSON")
+        btn_sel_json.setProperty("class", "secondary")
         btn_sel_json.clicked.connect(self.seleccionar_json)
         box_json1.addWidget(self.lbl_json)
+        box_json1.addStretch()
         box_json1.addWidget(btn_sel_json)
         layout.addLayout(box_json1)
 
         box_json2 = QHBoxLayout()
         lbl_json2 = QLabel("Migrar JSON seleccionado:")
-        btn_migrar_json = QPushButton("JSON  a  Neo4j")
+        btn_migrar_json = QPushButton("➡️ JSON a Neo4j")
         btn_migrar_json.clicked.connect(self.migrar_json)
         box_json2.addWidget(lbl_json2)
+        box_json2.addStretch()
         box_json2.addWidget(btn_migrar_json)
         layout.addLayout(box_json2)
 
         self.btn_migrar_json = btn_migrar_json
-        self.btn_migrar_json.setEnabled(False)  # desactivado al inicio
+        self.btn_migrar_json.setEnabled(False)
 
-        # JSON a PostgreSQL
+        # Json a postgresql
         box_json_pg = QHBoxLayout()
         lbl_json_pg = QLabel("Guardar JSON en PostgreSQL:")
-        btn_json_pg = QPushButton("JSON  a  PostgreSQL")
+        btn_json_pg = QPushButton("➡️ JSON a PostgreSQL")
         btn_json_pg.clicked.connect(self.migrar_json_a_postgres_btn)
         box_json_pg.addWidget(lbl_json_pg)
+        box_json_pg.addStretch()
         box_json_pg.addWidget(btn_json_pg)
         layout.addLayout(box_json_pg)
 
@@ -72,12 +93,17 @@ class TabHerramientas(QWidget):
 
         self.add_separator(layout)
 
-        # Neo4j a PostgreSQL
+        # Neo4j a postgresql
+        seccion3 = QLabel("🔄 Sincronización Neo4j → PostgreSQL")
+        seccion3.setProperty("class", "section-title")
+        layout.addWidget(seccion3)
+
         box_neo_pg = QHBoxLayout()
         lbl_neo_pg = QLabel("Migrar datos desde Neo4j a PostgreSQL:")
-        btn_neo_pg = QPushButton("Neo4j  a  PostgreSQL")
+        btn_neo_pg = QPushButton("➡️ Neo4j a PostgreSQL")
         btn_neo_pg.clicked.connect(self.migrar_neo_pg)
         box_neo_pg.addWidget(lbl_neo_pg)
+        box_neo_pg.addStretch()
         box_neo_pg.addWidget(btn_neo_pg)
         layout.addLayout(box_neo_pg)
 
@@ -86,11 +112,17 @@ class TabHerramientas(QWidget):
         self.add_separator(layout)
 
         # Limpiar grafo
+        seccion4 = QLabel("🧹 Mantenimiento")
+        seccion4.setProperty("class", "section-title")
+        layout.addWidget(seccion4)
+
         box_clean = QHBoxLayout()
         lbl_clean = QLabel("Limpiar grafo completamente:")
-        btn_clean = QPushButton("Limpiar grafo")
+        btn_clean = QPushButton("🗑️ Limpiar Grafo")
+        btn_clean.setProperty("class", "danger")
         btn_clean.clicked.connect(self.limpiar_grafo)
         box_clean.addWidget(lbl_clean)
+        box_clean.addStretch()
         box_clean.addWidget(btn_clean)
         layout.addLayout(box_clean)
 
@@ -98,12 +130,14 @@ class TabHerramientas(QWidget):
 
         self.add_separator(layout)
 
-        # Abrir Browser Neo4j
+        # Abrir browser neo4j
         box_browser = QHBoxLayout()
         lbl_browser = QLabel("Abrir visualizador de grafo Neo4j:")
-        btn_browser = QPushButton("Abrir Neo4j Browser")
+        btn_browser = QPushButton("🌐 Abrir Neo4j Browser")
+        btn_browser.setProperty("class", "secondary")
         btn_browser.clicked.connect(self.abrir_browser)
         box_browser.addWidget(lbl_browser)
+        box_browser.addStretch()
         box_browser.addWidget(btn_browser)
         layout.addLayout(box_browser)
 
@@ -113,7 +147,7 @@ class TabHerramientas(QWidget):
         self.lbl_estado = QLabel("")
         layout.addWidget(self.lbl_estado)
 
-        # Ruta JSON
+        # Ruta json
         self.json_path = None
 
     # Separador visual
@@ -121,7 +155,7 @@ class TabHerramientas(QWidget):
         sep = QFrame()
         sep.setFrameShape(QFrame.HLine)
         sep.setFrameShadow(QFrame.Sunken)
-        sep.setStyleSheet("background-color: #ccc; max-height: 1px;")
+        sep.setStyleSheet("background-color: #e2e8f0; max-height: 2px;")
         layout.addWidget(sep)
 
     # Mensaje emergente
@@ -129,9 +163,10 @@ class TabHerramientas(QWidget):
         msg = QMessageBox()
         msg.setWindowTitle("Información")
         msg.setText(txt)
+        msg.setWindowIcon(QIcon("ui/AmigosDB.png"))
         msg.exec_()
 
-    # Migrar PostgreSQL a Neo4j
+    # Migrar postgresql a neo4j
     def migrar_pg(self):
         self.btn_pg.setEnabled(False)
         migrar_desde_postgres()
@@ -139,7 +174,7 @@ class TabHerramientas(QWidget):
         self.lbl_estado.setText("Migración PostgreSQL a Neo4j completada.")
         self.mensaje("Migración finalizada.")
 
-    # Seleccionar JSON
+    # Seleccionar json
     def seleccionar_json(self):
         ruta, _ = QFileDialog.getOpenFileName(
             self, "Seleccionar archivo JSON", "", "JSON (*.json)"
@@ -153,7 +188,7 @@ class TabHerramientas(QWidget):
             self.btn_migrar_json.setEnabled(False)
             self.btn_json_pg.setEnabled(False)
 
-    # JSON a Neo4j
+    # Json a neo4j
     def migrar_json(self):
         if not self.json_path:
             self.mensaje("Seleccione primero un archivo JSON.")
@@ -167,7 +202,7 @@ class TabHerramientas(QWidget):
         self.mensaje("Datos migrados correctamente.")
         self.limpiar_json()
 
-    # JSON a PostgreSQL
+    # Json a postgresql
     def migrar_json_a_postgres_btn(self):
         if not self.json_path:
             self.mensaje("Seleccione primero un archivo JSON.")
@@ -181,13 +216,17 @@ class TabHerramientas(QWidget):
         self.mensaje("Datos escritos en PostgreSQL correctamente.")
         self.limpiar_json()
 
-    # Neo4j a PostgreSQL
+    # Neo4j a postgresql
     def migrar_neo_pg(self):
         self.btn_neo_pg.setEnabled(False)
         migrar_neo4j_a_postgres()
+        
+        # Sincronizar de vuelta a Neo4j para que las recomendaciones funcionen
+        migrar_desde_postgres()
+        
         self.btn_neo_pg.setEnabled(True)
 
-        self.lbl_estado.setText("Neo4j a PostgreSQL completado.")
+        self.lbl_estado.setText("Neo4j a PostgreSQL completado y sincronizado.")
         self.mensaje("Datos migrados desde Neo4j correctamente.")
 
         parent_window = self.parent().parent()
@@ -216,6 +255,15 @@ class TabHerramientas(QWidget):
             for tab in parent_window.findChildren(TabFeed):
                 tab.actualizar_todo()
 
+            # Refrescar recomendaciones
+            from tabs.tab_recomendaciones import TabRecomendaciones
+            for tab in parent_window.findChildren(TabRecomendaciones):
+                try:
+                    tab.cargar_usuarios()
+                    tab.cargar_recomendaciones()
+                except:
+                    pass
+
             print("Interfaz refrescada después de migración.")
 
         except Exception as e:
@@ -234,12 +282,12 @@ class TabHerramientas(QWidget):
         self.lbl_estado.setText("Grafo completamente limpiado.")
         self.mensaje("Grafo vaciado exitosamente.")
    
-    # Abrir Browser Neo4j
+    # Abrir browser neo4j
     def abrir_browser(self):
         webbrowser.open("http://localhost:7474/browser/")
         self.lbl_estado.setText("Abriendo Neo4j Browser…")
 
-    # Limpiar selección JSON
+    # Limpiar seleccion json
     def limpiar_json(self):
         self.json_path = None
         self.lbl_json.setText("Archivo JSON: Ninguno")

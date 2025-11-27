@@ -13,7 +13,8 @@ class SplashScreen(QWidget):
         super().__init__()
 
         self.setWindowTitle("AmigosDB")
-        self.setGeometry(500, 200, 500, 350)
+        # Tamaño más grande como solicitaste
+        self.setGeometry(300, 150, 800, 600)
         self.setStyleSheet("background-color: #1f2937; border-radius: 15px;")
         self.setWindowIcon(QIcon("ui/AmigosDB.png"))
         
@@ -24,14 +25,14 @@ class SplashScreen(QWidget):
         # Logo
         logo = QLabel()
         pixmap = QPixmap("ui/AmigosDB.png")
-        pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo.setPixmap(pixmap)
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
         # Titulo
         title = QLabel("AmigosDB")
-        title.setFont(QFont("Arial", 26, QFont.Bold))
+        title.setFont(QFont("Arial", 36, QFont.Bold))
         title.setStyleSheet("color: white;")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
@@ -43,8 +44,8 @@ class SplashScreen(QWidget):
                 background-color: #10b981;
                 color: white;
                 border-radius: 10px;
-                padding: 10px 20px;
-                font-size: 16px;
+                padding: 15px 30px;
+                font-size: 18px;
             }
             QPushButton:hover {
                 background-color: #059669;

@@ -237,15 +237,41 @@ def migrar_neo4j_a_postgres():
 
 
 
+
+
+
 # ============================================================
-# ELIMINAR RELACIÓN EN NEO4J
+# RECOMENDACIONES DE AMIGOS (FRIENDS OF FRIENDS)
 # ============================================================
 
-def eliminar_amistad_neo4j(id1, id2):
+def obtener_recomendaciones_amigos(id_usuario):
+    """
+    Obtiene recomendaciones de amigos basadas en amigos de amigos.
+    Retorna personas que son amigas de mis amigos pero no son mis amigos directos.
+    """
     driver = get_driver()
+    recomendaciones = []
+    
     with driver.session() as session:
-        session.run("""
-            MATCH (a:Persona {id_sql: $id1})-[r:AMIGO_DE]->(b:Persona {id_sql: $id2})
-            DELETE r
-        """, id1=id1, id2=id2)
+        resultado = session.run("""
+            MATCH (yo:Persona {id_sql: $id_usuario})-[:AMIGO_DE]-(amigo:Persona)-[:AMIGO_DE]-(recomendado:Persona)
+            WHERE NOT (yo)-[:AMIGO_DE]-(recomendado)
+              AND yo <> recomendado
+            RETURN DISTINCT recomendado.id_sql AS id, 
+                   recomendado.nombre AS nombre, 
+                   recomendado.email AS email,
+                   COUNT(DISTINCT amigo) AS amigos_en_comun
+            ORDER BY amigos_en_comun DESC
+        """, id_usuario=id_usuario)
+        
+        for record in resultado:
+            recomendaciones.append({
+                'id': record['id'],
+                'nombre': record['nombre'],
+                'email': record['email'],
+                'amigos_en_comun': record['amigos_en_comun']
+            })
+    
     driver.close()
+    return recomendaciones
+

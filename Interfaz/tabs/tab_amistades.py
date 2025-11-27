@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QComboBox,
     QTableWidget, QTableWidgetItem, QMessageBox
 )
-
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHeaderView
 
 from database.postgres import (
@@ -22,13 +22,25 @@ class TabAmistades(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
         self.setLayout(layout)
 
-        # ============================================================
-        # SECCIÓN 1 — CREAR NUEVA AMISTAD
-        # ============================================================
+        # Titulo
+        titulo = QLabel("Gestión de Amistades")
+        titulo.setProperty("class", "title")
+        layout.addWidget(titulo)
 
-        layout.addWidget(QLabel("Crear nueva amistad"))
+        descripcion = QLabel("Administra las relaciones de amistad entre usuarios")
+        descripcion.setProperty("class", "description")
+        layout.addWidget(descripcion)
+
+        layout.addSpacing(10)
+
+        # Seccion crear nueva amistad
+        seccion1 = QLabel("Crear Nueva Amistad")
+        seccion1.setProperty("class", "section-title")
+        layout.addWidget(seccion1)
 
         crear_layout = QHBoxLayout()
 
@@ -46,7 +58,8 @@ class TabAmistades(QWidget):
         self.combo_user1.currentIndexChanged.connect(self.verificar_creacion)
         self.combo_user2.currentIndexChanged.connect(self.verificar_creacion)
 
-        self.btn_crear = QPushButton("Enviar solicitud de amistad")
+        self.btn_crear = QPushButton("➕ Enviar Solicitud de Amistad")
+        self.btn_crear.setProperty("class", "success")
         self.btn_crear.setEnabled(False)
         self.btn_crear.clicked.connect(self.crear_amistad)
         layout.addWidget(self.btn_crear)
@@ -54,202 +67,184 @@ class TabAmistades(QWidget):
         self.lbl_msg = QLabel("")
         layout.addWidget(self.lbl_msg)
 
-        # ============================================================
-        # SECCIÓN 2 — GESTIONAR MIS AMISTADES
-        # ============================================================
+        layout.addSpacing(15)
 
-        layout.addWidget(QLabel("\nMis amistades"))
+        # Seccion mis amistades
+        seccion2 = QLabel("Mis Amistades")
+        seccion2.setProperty("class", "section-title")
+        layout.addWidget(seccion2)
 
         yo_layout = QHBoxLayout()
         yo_layout.addWidget(QLabel("Yo soy:"))
-        self.combo_mi_usuario = QComboBox()
-        yo_layout.addWidget(self.combo_mi_usuario)
+        self.combo_yo = QComboBox()
+        yo_layout.addWidget(self.combo_yo)
         layout.addLayout(yo_layout)
 
-        self.combo_mi_usuario.currentIndexChanged.connect(self.cargar_mis_amistades)
+        self.combo_yo.currentIndexChanged.connect(self.cargar_mis_amistades)
 
-        # Tabla
+        # Tabla de amistades
         self.tabla = QTableWidget()
-        self.tabla.setColumnCount(3)
-        self.tabla.setHorizontalHeaderLabels(["ID", "Amigo", "Estado"])
+        self.tabla.setColumnCount(5)
+        self.tabla.setHorizontalHeaderLabels(["ID Amistad", "Amigo", "Email", "Estado", "Fecha"])
         self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.tabla.cellClicked.connect(self.seleccionar_amistad)
         layout.addWidget(self.tabla)
 
-        # Botón Refrescar
-        btn_refresh = QPushButton("Refrescar amistades")
-        btn_refresh.clicked.connect(self.cargar_mis_amistades)
-        layout.addWidget(btn_refresh)
+        # Boton refrescar
+        self.btn_refresh = QPushButton("🔄 Refrescar Amistades")
+        self.btn_refresh.setProperty("class", "secondary")
+        self.btn_refresh.clicked.connect(self.cargar_mis_amistades)
+        layout.addWidget(self.btn_refresh)
 
-        # Botones acción
+        # Botones de accion
         opciones = QHBoxLayout()
 
-        self.btn_aceptar = QPushButton("Aceptar")
+        self.btn_aceptar = QPushButton("✅ Aceptar")
+        self.btn_aceptar.setProperty("class", "success")
         self.btn_aceptar.clicked.connect(lambda: self.cambiar_estado("ACEPTADA"))
         opciones.addWidget(self.btn_aceptar)
 
-        self.btn_rechazar = QPushButton("Rechazar")
+        self.btn_rechazar = QPushButton("❌ Rechazar")
+        self.btn_rechazar.setProperty("class", "danger")
         self.btn_rechazar.clicked.connect(lambda: self.cambiar_estado("RECHAZADA"))
         opciones.addWidget(self.btn_rechazar)
 
-        self.btn_bloquear = QPushButton("Bloquear")
+        self.btn_bloquear = QPushButton("🚫 Bloquear")
+        self.btn_bloquear.setProperty("class", "warning")
         self.btn_bloquear.clicked.connect(lambda: self.cambiar_estado("BLOQUEADA"))
         opciones.addWidget(self.btn_bloquear)
 
-        self.btn_eliminar = QPushButton("Eliminar amistad")
+        self.btn_eliminar = QPushButton("🗑️ Eliminar")
+        self.btn_eliminar.setProperty("class", "danger")
         self.btn_eliminar.clicked.connect(lambda: self.cambiar_estado("ELIMINADA"))
         opciones.addWidget(self.btn_eliminar)
 
-        self.btn_desbloquear = QPushButton("Desbloquear")
+        self.btn_desbloquear = QPushButton("🔓 Desbloquear")
         self.btn_desbloquear.clicked.connect(lambda: self.cambiar_estado("PENDIENTE"))
         opciones.addWidget(self.btn_desbloquear)
 
         layout.addLayout(opciones)
 
-        self.fila_seleccionada = -1
-        self.desactivar_botones()
-
-        self.cargar_usuarios()
-
-    # ============================================================
-    # UTILS
-    # ============================================================
-
-    def mensaje(self, t):
-        QMessageBox.information(self, "Información", t)
-
-    # ============================================================
-    # CREAR AMISTAD
-    # ============================================================
-
-    def cargar_usuarios(self):
-        usuarios = obtener_usuarios()
-
-        self.combo_user1.clear()
-        self.combo_user2.clear()
-        self.combo_mi_usuario.clear()
-
-        for u in usuarios:
-            text = f"{u[0]} - {u[1]}"
-            self.combo_user1.addItem(text, u[0])
-            self.combo_user2.addItem(text, u[0])
-            self.combo_mi_usuario.addItem(text, u[0])
-
-    def existe_amistad(self, id1, id2):
-        for a in obtener_amistades():
-            if (a[4] == id1 and a[5] == id2) or (a[4] == id2 and a[5] == id1):
-                return True
-        return False
-
-    def verificar_creacion(self):
-        id1 = self.combo_user1.currentData()
-        id2 = self.combo_user2.currentData()
-
-        if not id1 or not id2 or id1 == id2:
-            self.btn_crear.setEnabled(False)
-            return
-
-        if self.existe_amistad(id1, id2):
-            self.btn_crear.setEnabled(False)
-            self.lbl_msg.setText("Ya existe una relación de amistad.")
-            return
-
-        self.lbl_msg.setText("")
-        self.btn_crear.setEnabled(True)
-
-    def crear_amistad(self):
-        id1 = self.combo_user1.currentData()
-        id2 = self.combo_user2.currentData()
-
-        msg = crear_amistad_procedure(id1, id2)
-        self.lbl_msg.setText(msg)
-
-        migrar_desde_postgres()
-        self.cargar_mis_amistades()
-
-    # ============================================================
-    # MIS AMISTADES
-    # ============================================================
-
-    def cargar_mis_amistades(self):
-        id_usuario = self.combo_mi_usuario.currentData()
-
-        datos = obtener_amistades_por_usuario(id_usuario)
-
-        datos = [a for a in datos if a[2] != "ELIMINADA"]
-
-        self.tabla.setRowCount(len(datos))
-
-        for row, a in enumerate(datos):
-            self.tabla.setItem(row, 0, QTableWidgetItem(str(a[0])))
-            self.tabla.setItem(row, 1, QTableWidgetItem(a[1]))
-            self.tabla.setItem(row, 2, QTableWidgetItem(a[2]))
-
-        self.fila_seleccionada = -1
-        self.desactivar_botones()
-
-    # ============================================================
-    # SELECCIÓN Y BOTONES
-    # ============================================================
-
-    def desactivar_botones(self):
+        # Desactivar botones al inicio
         self.btn_aceptar.setEnabled(False)
         self.btn_rechazar.setEnabled(False)
         self.btn_bloquear.setEnabled(False)
         self.btn_eliminar.setEnabled(False)
         self.btn_desbloquear.setEnabled(False)
 
-    def seleccionar_amistad(self, row, col):
-        self.fila_seleccionada = row
-        estado = self.tabla.item(row, 2).text()
+        self.tabla.cellClicked.connect(self.habilitar_botones)
 
-        id_usuario = self.combo_mi_usuario.currentData()
+        # Cargar datos iniciales
+        self.cargar_usuarios()
 
-        self.desactivar_botones()
+    def mensaje(self, texto):
+        # Mostrar mensaje emergente
+        msg = QMessageBox()
+        msg.setWindowTitle("Información")
+        msg.setText(texto)
+        msg.setWindowIcon(QIcon("ui/AmigosDB.png"))
+        msg.exec_()
 
-        id_amistad = int(self.tabla.item(row, 0).text())
-        fila = obtener_amistades_por_usuario(id_usuario)
-        fila = [x for x in fila if x[0] == id_amistad][0]
+    def cargar_usuarios(self):
+        # Cargar usuarios en los combos
+        usuarios = obtener_usuarios()
 
-        solicitante = fila[3]
-        receptor = fila[4]
+        self.combo_user1.clear()
+        self.combo_user2.clear()
+        self.combo_yo.clear()
 
-        soy_solicitante = id_usuario == solicitante
-        soy_receptor = id_usuario == receptor
+        for u in usuarios:
+            texto = f"{u[0]} - {u[1]}"
+            self.combo_user1.addItem(texto, u[0])
+            self.combo_user2.addItem(texto, u[0])
+            self.combo_yo.addItem(texto, u[0])
 
-        if estado == "PENDIENTE":
-            if soy_receptor:
-                self.btn_aceptar.setEnabled(True)
-                self.btn_rechazar.setEnabled(True)
-            if soy_solicitante:
-                self.btn_eliminar.setEnabled(True)
+    def verificar_creacion(self):
+        # Verificar que no se seleccione el mismo usuario dos veces
+        id1 = self.combo_user1.currentData()
+        id2 = self.combo_user2.currentData()
 
-        elif estado == "ACEPTADA":
-            self.btn_bloquear.setEnabled(True)
-            self.btn_eliminar.setEnabled(True)
+        if id1 and id2 and id1 != id2:
+            self.btn_crear.setEnabled(True)
+            self.lbl_msg.setText("")
+        else:
+            self.btn_crear.setEnabled(False)
+            if id1 == id2:
+                self.lbl_msg.setText("No puede crear amistad consigo mismo.")
 
-        elif estado == "BLOQUEADA":
-            if soy_solicitante:
-                self.btn_desbloquear.setEnabled(True)
+    def crear_amistad(self):
+        # Crear una nueva solicitud de amistad
+        id1 = self.combo_user1.currentData()
+        id2 = self.combo_user2.currentData()
 
-        elif estado == "RECHAZADA":
-            if soy_receptor:
-                self.btn_aceptar.setEnabled(True)
-
-    # ============================================================
-    # CAMBIO DE ESTADO
-    # ============================================================
-
-    def cambiar_estado(self, nuevo):
-        if self.fila_seleccionada < 0:
-            self.mensaje("Seleccione una amistad.")
+        if not id1 or not id2:
+            self.mensaje("Seleccione dos usuarios.")
             return
 
-        id_amistad = int(self.tabla.item(self.fila_seleccionada, 0).text())
+        try:
+            resultado = crear_amistad_procedure(id1, id2)
+            migrar_desde_postgres()
+            self.cargar_mis_amistades()
+            self.refrescar_recomendaciones()
+            self.mensaje(f"Solicitud enviada. {resultado}")
+        except Exception as e:
+            self.mensaje(f"Error: {str(e)}")
 
-        actualizar_estado_amistad(id_amistad, nuevo)
-        migrar_desde_postgres()
+    def cargar_mis_amistades(self):
+        # Cargar las amistades del usuario seleccionado
+        id_usuario = self.combo_yo.currentData()
 
-        self.cargar_mis_amistades()
+        if not id_usuario:
+            return
 
-        self.mensaje(f"Estado cambiado a {nuevo}.")
+        amistades = obtener_amistades_por_usuario(id_usuario)
+        self.tabla.setRowCount(len(amistades))
+
+        for row, a in enumerate(amistades):
+            self.tabla.setItem(row, 0, QTableWidgetItem(str(a[0])))
+            self.tabla.setItem(row, 1, QTableWidgetItem(a[1]))
+            self.tabla.setItem(row, 2, QTableWidgetItem(a[2]))
+            self.tabla.setItem(row, 3, QTableWidgetItem(a[3]))
+            self.tabla.setItem(row, 4, QTableWidgetItem(str(a[4])))
+
+    def habilitar_botones(self, row, col):
+        # Habilitar botones según el estado de la amistad
+        estado = self.tabla.item(row, 3).text()
+
+        self.btn_aceptar.setEnabled(estado == "PENDIENTE")
+        self.btn_rechazar.setEnabled(estado == "PENDIENTE")
+        self.btn_bloquear.setEnabled(estado in ["PENDIENTE", "ACEPTADA"])
+        self.btn_eliminar.setEnabled(estado in ["PENDIENTE", "ACEPTADA", "RECHAZADA"])
+        self.btn_desbloquear.setEnabled(estado == "BLOQUEADA")
+
+    def cambiar_estado(self, nuevo_estado):
+        # Cambiar el estado de una amistad
+        row = self.tabla.currentRow()
+        if row < 0:
+            self.mensaje("Seleccione una amistad primero.")
+            return
+
+        id_amistad = int(self.tabla.item(row, 0).text())
+
+        try:
+            actualizar_estado_amistad(id_amistad, nuevo_estado)
+            migrar_desde_postgres()
+            self.cargar_mis_amistades()
+            self.refrescar_recomendaciones()
+            self.mensaje(f"Estado actualizado a: {nuevo_estado}")
+        except Exception as e:
+            self.mensaje(f"Error: {str(e)}")
+
+    def refrescar_recomendaciones(self):
+        # Refrescar la pestaña de recomendaciones
+        parent_window = self.parent().parent()
+
+        try:
+            from tabs.tab_recomendaciones import TabRecomendaciones
+            for tab in parent_window.findChildren(TabRecomendaciones):
+                try:
+                    tab.cargar_usuarios()
+                    tab.cargar_recomendaciones()
+                except:
+                    pass
+        except Exception as e:
+            print(f"Error refrescando recomendaciones: {e}")

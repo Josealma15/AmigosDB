@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import (
     QPushButton, QLineEdit, QLabel,
     QTableWidget, QTableWidgetItem, QComboBox, QMessageBox
 )
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QHeaderView
 
 from database.postgres import (
     obtener_publicaciones, crear_publicacion,
@@ -11,30 +13,47 @@ from database.postgres import (
 )
 
 from database.neo4j_conn import migrar_desde_postgres
-from PyQt5.QtWidgets import QHeaderView
+
 
 class TabFeed(QWidget):
     def __init__(self):
         super().__init__()
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
         self.setLayout(layout)
 
-        layout.addWidget(QLabel("Gestión de Publicaciones"))
+        # Titulo
+        titulo = QLabel("Gestión de Publicaciones")
+        titulo.setProperty("class", "title")
+        layout.addWidget(titulo)
+
+        descripcion = QLabel("Crea, edita y visualiza publicaciones de la red social")
+        descripcion.setProperty("class", "description")
+        layout.addWidget(descripcion)
+
+        layout.addSpacing(10)
+
+        # Seccion de publicaciones
+        seccion_posts = QLabel("Administrar Publicaciones")
+        seccion_posts.setProperty("class", "section-title")
+        layout.addWidget(seccion_posts)
 
         # Tabla de posts
         self.tabla_posts = QTableWidget()
         self.tabla_posts.setColumnCount(3)
         self.tabla_posts.setHorizontalHeaderLabels(["ID", "Contenido", "Autor_ID"])
         self.tabla_posts.cellClicked.connect(self.cargar_post_en_formulario)
-        layout.addWidget(self.tabla_posts)
         self.tabla_posts.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.tabla_posts)
 
         # Formulario para crear/editar posts
         form = QHBoxLayout()
+        form.setSpacing(10)
 
         self.input_texto = QLineEdit()
-        self.input_texto.setPlaceholderText("Contenido del post")
+        self.input_texto.setPlaceholderText("¿Qué estás pensando?")
 
         self.combo_autor = QComboBox()
         self.cargar_usuarios_en_combo()
@@ -44,25 +63,31 @@ class TabFeed(QWidget):
 
         layout.addLayout(form)
 
-        # Botones CRUD
+        # Botones crud
         botones = QHBoxLayout()
+        botones.setSpacing(10)
 
-        btn_crear = QPushButton("Crear")
-        btn_crear.clicked.connect(self.crear_post)
-
-        btn_actualizar = QPushButton("Actualizar")
-        btn_actualizar.clicked.connect(self.actualizar_post)
-
-        btn_eliminar = QPushButton("Eliminar")
-        btn_eliminar.clicked.connect(self.eliminar_post)
-
-        btn_refrescar = QPushButton("Refrescar Lista")
+        btn_refrescar = QPushButton("🔄 Refrescar")
+        btn_refrescar.setProperty("class", "secondary")
         btn_refrescar.clicked.connect(self.actualizar_todo)
 
+        btn_crear = QPushButton("➕ Crear Publicación")
+        btn_crear.setProperty("class", "success")
+        btn_crear.clicked.connect(self.crear_post)
+
+        btn_actualizar = QPushButton("✏️ Actualizar")
+        btn_actualizar.setProperty("class", "warning")
+        btn_actualizar.clicked.connect(self.actualizar_post)
+
+        btn_eliminar = QPushButton("🗑️ Eliminar")
+        btn_eliminar.setProperty("class", "danger")
+        btn_eliminar.clicked.connect(self.eliminar_post)
+
+        botones.addWidget(btn_refrescar)
+        botones.addStretch()
         botones.addWidget(btn_crear)
         botones.addWidget(btn_actualizar)
         botones.addWidget(btn_eliminar)
-        botones.addWidget(btn_refrescar)
 
         layout.addLayout(botones)
 
@@ -78,17 +103,21 @@ class TabFeed(QWidget):
         self.cargar_posts()
 
         # Vista feed
-        layout.addWidget(QLabel("\nVista Feed"))
+        layout.addSpacing(15)
+        seccion_feed = QLabel("Feed de Noticias")
+        seccion_feed.setProperty("class", "section-title")
+        layout.addWidget(seccion_feed)
 
         self.tabla_feed = QTableWidget()
         self.tabla_feed.setColumnCount(4)
         self.tabla_feed.setHorizontalHeaderLabels(
             ["Usuario", "Contenido", "Fecha", "Comentarios"]
         )
-        layout.addWidget(self.tabla_feed)
         self.tabla_feed.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.tabla_feed)
 
-        btn_feed = QPushButton("Refrescar Feed")
+        btn_feed = QPushButton("🔄 Refrescar Feed")
+        btn_feed.setProperty("class", "secondary")
         btn_feed.clicked.connect(self.actualizar_todo)
         layout.addWidget(btn_feed)
 
@@ -98,9 +127,10 @@ class TabFeed(QWidget):
         msg = QMessageBox()
         msg.setWindowTitle("Información")
         msg.setText(msg_text)
+        msg.setWindowIcon(QIcon("ui/AmigosDB.png"))
         msg.exec_()
 
-    # CRUD posts
+    # Crud posts
     def cargar_usuarios_en_combo(self):
         self.combo_autor.clear()
         for u in obtener_usuarios():
