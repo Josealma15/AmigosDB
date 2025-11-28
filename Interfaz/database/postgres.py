@@ -11,10 +11,7 @@ PG_CONFIG = {
 def get_connection():
     return psycopg2.connect(**PG_CONFIG)
 
-# ============================================================
 # USUARIOS
-# ============================================================
-
 def obtener_usuarios():
     conn = get_connection()
     cursor = conn.cursor()
@@ -59,11 +56,7 @@ def obtener_usuario_por_email(email):
     conn.close()
     return datos
 
-
-# ============================================================
 # AMISTADES
-# ============================================================
-
 def obtener_amistades():
     conn = get_connection()
     cursor = conn.cursor()
@@ -83,7 +76,6 @@ def obtener_amistades():
     conn.close()
     return datos
 
-
 # Procedimiento almacenado para crear amistad
 def crear_amistad_procedure(id1, id2):
     conn = get_connection()
@@ -93,7 +85,6 @@ def crear_amistad_procedure(id1, id2):
     conn.commit()
     conn.close()
     return mensaje
-
 
 # Actualizar estado de amistad (ACEPTADA, RECHAZADA, BLOQUEADA, ELIMINADA, etc.)
 def actualizar_estado_amistad(id_amistad, estado):
@@ -107,11 +98,9 @@ def actualizar_estado_amistad(id_amistad, estado):
     conn.commit()
     conn.close()
 
-
 # Eliminar amistad (NO borra, solamente la marca como eliminada)
 def eliminar_amistad(id_amistad):
     actualizar_estado_amistad(id_amistad, "ELIMINADA")
-
 
 # Obtener amistades de un usuario específico
 def obtener_amistades_por_usuario(id_usuario):
@@ -145,11 +134,7 @@ def obtener_amistades_por_usuario(id_usuario):
     conn.close()
     return datos
 
-
-# ============================================================
 # PUBLICACIONES
-# ============================================================
-
 def obtener_feed():
     conn = get_connection()
     cursor = conn.cursor()

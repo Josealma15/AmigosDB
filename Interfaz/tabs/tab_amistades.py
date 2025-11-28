@@ -16,7 +16,6 @@ from database.postgres import (
 
 from database.neo4j_conn import migrar_desde_postgres
 
-
 class TabAmistades(QWidget):
     def __init__(self):
         super().__init__()

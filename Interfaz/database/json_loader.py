@@ -3,7 +3,7 @@ import json
 from database.postgres import (
     crear_usuario,
     crear_publicacion,
-    crear_amistad_procedure   # <- se usa este, NO crear_amistad
+    crear_amistad_procedure
 )
 
 # Cargar JSON desde archivo
@@ -25,9 +25,7 @@ def migrar_json_a_postgres(data):
             if "duplicate key" not in str(e).lower():
                 print("Error usuario:", e)
 
-    # --------------------------
     # Amistades (siempre crear usando procedure)
-    # --------------------------
     for a in data.get("amistades", []):
         id1 = a["id1"]
         id2 = a["id2"]
@@ -37,9 +35,7 @@ def migrar_json_a_postgres(data):
             if "duplicate key" not in str(e).lower():
                 print("Error amistad:", e)
 
-    # --------------------------
     # Publicaciones
-    # --------------------------
     for p in data.get("publicaciones", []):
         try:
             crear_publicacion(p["texto"], p["autor"])

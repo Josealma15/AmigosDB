@@ -14,7 +14,6 @@ from database.postgres import (
 
 from database.neo4j_conn import migrar_desde_postgres
 
-
 class TabFeed(QWidget):
     def __init__(self):
         super().__init__()

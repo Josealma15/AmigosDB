@@ -8,10 +8,7 @@ def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=NEO4J_AUTH)
 
 
-# ============================================================
 # MIGRAR JSON → NEO4J
-# ============================================================
-
 def migrar_json_a_neo4j(datos):
     driver = get_driver()
 
@@ -51,11 +48,7 @@ def migrar_json_a_neo4j(datos):
     driver.close()
     print("Migración JSON → Neo4j completada.")
 
-
-# ============================================================
 # MIGRAR POSTGRES → NEO4J
-# ============================================================
-
 from database.postgres import (
     obtener_usuarios,
     obtener_amistades,
@@ -107,11 +100,7 @@ def migrar_desde_postgres():
     driver.close()
     print("Migración completa PostgreSQL → Neo4j.")
 
-
-# ============================================================
 # MIGRAR NEO4J → POSTGRES
-# ============================================================
-
 from database.postgres import (
     crear_usuario,
     crear_publicacion,
@@ -126,9 +115,7 @@ def migrar_neo4j_a_postgres():
 
     with driver.session() as session:
 
-        # ============================================================
         # 1. Migrar usuarios desde Neo4j → PostgreSQL
-        # ============================================================
         usuarios_neo = session.run("""
             MATCH (p:Persona)
             RETURN p.id_sql AS id_neo, p.nombre AS nombre, p.email AS email
@@ -159,9 +146,7 @@ def migrar_neo4j_a_postgres():
             else:
                 print(f"ADVERTENCIA: No se pudo mapear usuario con email {email}")
 
-        # ============================================================
         # 2. Migrar amistades usando IDs mapeados
-        # ============================================================
         amistades_neo = session.run("""
             MATCH (a:Persona)-[:AMIGO_DE]->(b:Persona)
             RETURN a.id_sql AS id1_neo, b.id_sql AS id2_neo, a.email AS email1, b.email AS email2
@@ -204,9 +189,7 @@ def migrar_neo4j_a_postgres():
                 except Exception as e:
                     print(f"Error creando amistad {email1} ↔ {email2}:", e)
 
-        # ============================================================
         # 3. Migrar publicaciones usando IDs mapeados
-        # ============================================================
         publicaciones = session.run("""
             MATCH (u:Persona)-[:PUBLICO]->(p:Post)
             RETURN p.contenido AS texto, u.id_sql AS autor_neo, u.email AS autor_email
@@ -235,15 +218,7 @@ def migrar_neo4j_a_postgres():
 
     print("✅ Migración Neo4j → PostgreSQL completada con mapeo de IDs.")
 
-
-
-
-
-
-# ============================================================
 # RECOMENDACIONES DE AMIGOS (FRIENDS OF FRIENDS)
-# ============================================================
-
 def obtener_recomendaciones_amigos(id_usuario):
     """
     Obtiene recomendaciones de amigos basadas en amigos de amigos.

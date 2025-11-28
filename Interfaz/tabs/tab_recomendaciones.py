@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import QHeaderView
 from database.postgres import obtener_usuarios, crear_amistad_procedure
 from database.neo4j_conn import obtener_recomendaciones_amigos, migrar_desde_postgres
 
-
 class TabRecomendaciones(QWidget):
     def __init__(self):
         super().__init__()
