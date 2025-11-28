@@ -89,7 +89,7 @@ class TabRecomendaciones(QWidget):
 
     # Cargar usuarios
     def cargar_usuarios(self):
-        """Cargar usuarios en el combo box"""
+        # Cargar usuarios en el combo box
         usuarios = obtener_usuarios()
         
         self.combo_usuario.clear()
@@ -100,7 +100,7 @@ class TabRecomendaciones(QWidget):
 
     # Cargar recomendaciones
     def cargar_recomendaciones(self):
-        """Cargar recomendaciones de amigos desde Neo4j"""
+        # Cargar recomendaciones de amigos desde Neo4j
         id_usuario = self.combo_usuario.currentData()
         
         if not id_usuario:
@@ -133,13 +133,13 @@ class TabRecomendaciones(QWidget):
 
     # Seleccion de recomendacion
     def seleccionar_recomendacion(self, row, col):
-        """Manejar selección de una recomendación"""
+        # Manejar selección de una recomendación
         self.fila_seleccionada = row
         self.btn_enviar_solicitud.setEnabled(True)
 
     # Enviar solicitud de amistad
     def enviar_solicitud(self):
-        """Enviar solicitud de amistad a la persona recomendada"""
+        #Enviar solicitud de amistad a la persona recomendada
         if self.fila_seleccionada < 0:
             self.mensaje_error("Seleccione una recomendación primero.")
             return
@@ -166,7 +166,7 @@ class TabRecomendaciones(QWidget):
 
     # Mensajes
     def mensaje_info(self, texto):
-        """Mostrar mensaje de información"""
+        #Mostrar mensaje de información
         msg = QMessageBox()
         msg.setWindowTitle("Información")
         msg.setText(texto)
@@ -175,7 +175,7 @@ class TabRecomendaciones(QWidget):
         msg.exec_()
 
     def mensaje_error(self, texto):
-        """Mostrar mensaje de error"""
+        # Mostrar mensaje de error
         msg = QMessageBox()
         msg.setWindowTitle("Error")
         msg.setText(texto)

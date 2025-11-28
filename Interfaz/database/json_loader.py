@@ -11,13 +11,10 @@ def cargar_json_file(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 # Migrar JSON → PostgreSQL
 def migrar_json_a_postgres(data):
 
-    # --------------------------
     # Usuarios
-    # --------------------------
     for u in data.get("usuarios", []):
         try:
             crear_usuario(u["nombre"], u["email"], u.get("pais", "Desconocido"))
