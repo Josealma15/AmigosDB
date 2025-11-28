@@ -123,10 +123,14 @@ def obtener_amistades_por_usuario(id_usuario):
             CASE 
                 WHEN a.usuario_solicitante_id = %s THEN u2.nombre
                 ELSE u1.nombre
-            END AS amigo,
+            END AS amigo_nombre,
+            CASE 
+                WHEN a.usuario_solicitante_id = %s THEN u2.email
+                ELSE u1.email
+            END AS amigo_email,
             a.estado,
-            a.usuario_solicitante_id,
-            a.usuario_receptor_id
+            a.fecha_amistad,
+            a.usuario_solicitante_id
         FROM amistades a
         JOIN usuarios u1 ON a.usuario_solicitante_id = u1.id_usuario
         JOIN usuarios u2 ON a.usuario_receptor_id = u2.id_usuario
@@ -135,7 +139,7 @@ def obtener_amistades_por_usuario(id_usuario):
             OR 
             a.usuario_receptor_id = %s
         ORDER BY a.id_amistad;
-    """, (id_usuario, id_usuario, id_usuario))
+    """, (id_usuario, id_usuario, id_usuario, id_usuario))
 
     datos = cursor.fetchall()
     conn.close()

@@ -84,9 +84,10 @@ class TabAmistades(QWidget):
 
         # Tabla de amistades
         self.tabla = QTableWidget()
-        self.tabla.setColumnCount(5)
-        self.tabla.setHorizontalHeaderLabels(["ID Amistad", "Amigo", "Email", "Estado", "Fecha"])
+        self.tabla.setColumnCount(6)  # +1 para ID solicitante (oculto)
+        self.tabla.setHorizontalHeaderLabels(["ID Amistad", "Amigo", "Email", "Estado", "Fecha", "SolicitanteID"])
         self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tabla.setColumnHidden(5, True)  # Ocultar columna ID solicitante
         layout.addWidget(self.tabla)
 
         # Boton refrescar
@@ -131,7 +132,7 @@ class TabAmistades(QWidget):
         self.btn_eliminar.setEnabled(False)
         self.btn_desbloquear.setEnabled(False)
 
-        self.tabla.cellClicked.connect(self.habilitar_botones)
+        self.tabla.itemSelectionChanged.connect(self.habilitar_botones)
 
         # Cargar datos iniciales
         self.cargar_usuarios()
@@ -205,16 +206,64 @@ class TabAmistades(QWidget):
             self.tabla.setItem(row, 2, QTableWidgetItem(a[2]))
             self.tabla.setItem(row, 3, QTableWidgetItem(a[3]))
             self.tabla.setItem(row, 4, QTableWidgetItem(str(a[4])))
+            self.tabla.setItem(row, 5, QTableWidgetItem(str(a[5])))  # ID Solicitante
 
-    def habilitar_botones(self, row, col):
+    def habilitar_botones(self):
         # Habilitar botones según el estado de la amistad
-        estado = self.tabla.item(row, 3).text()
+        row = self.tabla.currentRow()
+        if row < 0:
+            self.desactivar_botones()
+            return
 
-        self.btn_aceptar.setEnabled(estado == "PENDIENTE")
-        self.btn_rechazar.setEnabled(estado == "PENDIENTE")
-        self.btn_bloquear.setEnabled(estado in ["PENDIENTE", "ACEPTADA"])
-        self.btn_eliminar.setEnabled(estado in ["PENDIENTE", "ACEPTADA", "RECHAZADA"])
-        self.btn_desbloquear.setEnabled(estado == "BLOQUEADA")
+        estado = self.tabla.item(row, 3).text().strip()
+        id_solicitante = int(self.tabla.item(row, 5).text())
+        id_usuario_actual = self.combo_yo.currentData()
+
+        # Solo el receptor puede aceptar (si yo NO soy el solicitante)
+        soy_receptor = (id_usuario_actual != id_solicitante)
+
+        if estado == "PENDIENTE":
+            self.btn_aceptar.setEnabled(soy_receptor)
+            self.btn_rechazar.setEnabled(soy_receptor)
+            self.btn_bloquear.setEnabled(False)
+            self.btn_eliminar.setEnabled(True)
+            self.btn_desbloquear.setEnabled(False)
+
+        elif estado == "ACEPTADA":
+            self.btn_aceptar.setEnabled(False)
+            self.btn_rechazar.setEnabled(False)
+            self.btn_bloquear.setEnabled(True)
+            self.btn_eliminar.setEnabled(True)
+            self.btn_desbloquear.setEnabled(False)
+
+        elif estado == "RECHAZADA":
+            self.btn_aceptar.setEnabled(True)   # Permitir reconsiderar
+            self.btn_rechazar.setEnabled(False)
+            self.btn_bloquear.setEnabled(True)
+            self.btn_eliminar.setEnabled(True)
+            self.btn_desbloquear.setEnabled(False)
+
+        elif estado == "BLOQUEADA":
+            self.btn_aceptar.setEnabled(False)
+            self.btn_rechazar.setEnabled(False)
+            self.btn_bloquear.setEnabled(False)
+            self.btn_eliminar.setEnabled(True)
+            self.btn_desbloquear.setEnabled(True)
+
+        else:
+            self.desactivar_botones()
+
+    def desactivar_botones(self):
+        self.btn_aceptar.setEnabled(False)
+        self.btn_rechazar.setEnabled(False)
+        self.btn_bloquear.setEnabled(False)
+        self.btn_eliminar.setEnabled(False)
+        self.btn_desbloquear.setEnabled(False)
+
+    def mousePressEvent(self, event):
+        self.tabla.clearSelection()
+        self.desactivar_botones()
+        super().mousePressEvent(event)
 
     def cambiar_estado(self, nuevo_estado):
         # Cambiar el estado de una amistad
